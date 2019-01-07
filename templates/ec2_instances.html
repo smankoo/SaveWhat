@@ -1,0 +1,77 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+    <h1 class="text-center">EC2 Instances</h1></p>
+    
+    <hr>
+
+    <div class="container w-100 h-100">
+        <div class="row align-items-center h-100">
+            <div class="col-md-6">
+                <form action="{{url_for('ec2_instances')}}"  method="POST" >
+                    <div class="form-group">
+                        <label for="region" class="control-label">Region:</label>
+                        <select class="form-control" id="region" name="region">
+                            {% for aws_region in all_aws_regions %}
+                                {% if aws_region.region_code == 'us-east-1' %}
+                                    <option value="{{aws_region.region_code}}" selected>{{aws_region.location_name}} - {{aws_region.region_code}}</option>
+                                {% else %}
+                                    <option value="{{aws_region.region_code}}">{{aws_region.location_name}} - {{aws_region.region_code}}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div> 
+
+                    <div class="form-group">
+                        <label for="region" class="control-label">Access Key:</label>
+                        <input type="text" name="access_key" class="form-control" id="access_key" value="{{awsinfo.access_key}}">
+                    </div>
+                    <div class="form-group">
+                        <label for="region" class="control-label">Secret Access Key:</label>
+                        <input type="password" name="secret_access_key" class="form-control" id="secret_access_key" value="{{awsinfo.secret_access_key}}">
+                    </div>
+                    <input type="submit" value="Submit" class="btn btn-primary">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if instanceinfolist|length > 0 %}
+        <hr>
+        <table class="table table-striped" style="width:100%" >
+            <tr>
+                <th>Region</th>
+                <th>Instance ID</th>
+                <th>Instance Name</th>
+                <th>Current State</th>
+                <th>Instance Type</th>
+                <th>Platform</th>
+                <th class="text-right">Annual Cost (USD)<br/>On-Demand</th>
+                <th class="text-right">Annual Cost (USD)<br/>Full Upfront Payment</th>
+                <th class="text-right">Annual Cost (USD)<br/>No Upfront Payment</th>
+            </tr>
+            {% for instanceinfo in instanceinfolist %}
+                <tr>
+                    <td>{{instanceinfo.region}}</td>
+                    <td>{{instanceinfo.instance.id}}</td>
+                    <td>
+                        {% if instanceinfo.instance.tags is not none %}
+                            {% for tag in instanceinfo.instance.tags %}
+                                {% if tag['Key'] == 'Name' %}
+                                {{ tag['Value'] }}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                    <td>{{instanceinfo.instance.state['Name']}}</td>
+                    <td>{{instanceinfo.instance.instance_type}}</td>
+                    <td>{{instanceinfo.instance.platform}}</td>
+                    <td class="text-right">{{instanceinfo.annual_price_od}}</td>
+                    <td class="text-right">{{instanceinfo.annual_price_all_upfront}}</td>
+                    <td class="text-right">{{instanceinfo.annual_price_no_upfront}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+{% endblock %}
